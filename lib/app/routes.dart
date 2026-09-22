@@ -9,6 +9,8 @@ import '../screens/historian/historian_screen.dart';
 import '../screens/progress/progress_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/profile/settings_screen.dart';
+import '../modules/contemporanea/contemporanea_screen.dart';
+import '../modules/contemporanea/contemporanea_content.dart';
 
 class AppRoutes {
   static const String login = '/';
@@ -21,6 +23,8 @@ class AppRoutes {
   static const String progress = '/progress';
   static const String profile = '/profile';
   static const String settings = '/settings';
+  static const String contemporanea = '/contemporanea';
+  static const String contemporaneaContent = '/contemporanea/content';
 
   static Map<String, WidgetBuilder> get routes {
     return {
@@ -34,6 +38,9 @@ class AppRoutes {
       progress: (context) => const ProgressScreen(),
       profile: (context) => const ProfileScreen(),
       settings: (context) => const SettingsScreen(),
+      contemporanea: (context) => const ContemporaneaScreen(),
+      contemporaneaContent: (context) => const ContemporaneaContent(),
     };
   }
 }
+

@@ -96,7 +96,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   ..._modules.map((module) => ModuleCard(
                         module: module,
                         onTap: () {
-                          if (module.status == ModuleStatus.downloaded) {
+                          if (module.id == 'mod_04' ||
+                              module.title.toLowerCase().contains('contemporánea')) {
+                            Navigator.pushNamed(context, AppRoutes.contemporanea);
+                          } else if (module.status == ModuleStatus.downloaded) {
                             Navigator.pushNamed(context, AppRoutes.content);
                           } else {
                             Navigator.pushNamed(

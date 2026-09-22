@@ -3,6 +3,7 @@ import '../../app/routes.dart';
 import '../../app/theme.dart';
 import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
+import '../../services/download_service.dart';
 import '../../services/tts_service.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/custom_button.dart';
@@ -17,17 +18,66 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final AuthService _authService = AuthService();
   final TTSService _ttsService = TTSService();
-  late UserModel _user;
+  final DownloadService _downloadService = DownloadService();
 
+  late UserModel _user;
   bool _ttsEnabled = true;
-  String _selectedLanguage = 'Español panameño';
-  String _textSize = 'A+';
+  final String _selectedLanguage = 'Español panameño';
+  final String _textSize = 'A+';
+  bool _isContemporaneaDownloaded = false;
 
   @override
   void initState() {
     super.initState();
     _user = _authService.currentUser ?? UserModel.mock();
     _ttsEnabled = _ttsService.isTTSEnabled;
+    _checkDownloads();
+  }
+
+  Future<void> _checkDownloads() async {
+    final downloaded = await _downloadService.isModuleDownloaded('mod_contemporanea');
+    if (mounted) {
+      setState(() {
+        _isContemporaneaDownloaded = downloaded;
+      });
+    }
+  }
+
+  Future<void> _deleteDownload() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Eliminar descargas'),
+        content: const Text(
+            '¿Estás seguro de que deseas eliminar los archivos descargados de "Panamá Contemporánea"? Deberás descargarlos nuevamente para acceder sin conexión.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.dangerRed,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      await _downloadService.removeModuleDownload('mod_contemporanea');
+      await _checkDownloads();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Archivos descargados de Panamá Contemporánea eliminados.'),
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _handleLogout() async {
@@ -199,179 +249,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Preferencias y Accesibilidad Card
-            const Text(
-              'Preferencias y Accesibilidad',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textDark,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceWhite,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.borderGrey),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Lectura en voz alta toggle
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Lectura en voz alta',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textDark,
-                              ),
-                            ),
-                            SizedBox(height: 2),
-                            Text(
-                              'Activa la narración de textos históricos',
-                              style: TextStyle(
-                                  fontSize: 12, color: AppColors.textMuted),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Switch(
-                        value: _ttsEnabled,
-                        activeThumbColor: AppColors.primaryTeal,
-                        onChanged: (val) {
-                          setState(() => _ttsEnabled = val);
-                        },
-                      ),
-                    ],
-                  ),
-                  const Divider(height: 24),
-
-                  // Idioma de Narración
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Idioma de Narración',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textDark,
-                            ),
-                          ),
-                          Text(
-                            'Voz regional personalizada',
-                            style: TextStyle(
-                                fontSize: 12, color: AppColors.textMuted),
-                          ),
-                        ],
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF1F5F9),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.borderGrey),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: _selectedLanguage,
-                            items: [
-                              'Español panameño',
-                              'Español neutro',
-                              'English'
-                            ]
-                                .map((lang) => DropdownMenuItem(
-                                      value: lang,
-                                      child: Text(
-                                        lang,
-                                        style: const TextStyle(fontSize: 13),
-                                      ),
-                                    ))
-                                .toList(),
-                            onChanged: (val) {
-                              if (val != null) {
-                                setState(() => _selectedLanguage = val);
-                              }
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Divider(height: 24),
-
-                  // Tamaño de texto buttons
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Tamaño de Texto',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textDark,
-                        ),
-                      ),
-                      Row(
-                        children: ['A', 'A+', 'A++']
-                            .map((size) => GestureDetector(
-                                  onTap: () {
-                                    setState(() => _textSize = size);
-                                  },
-                                  child: Container(
-                                    margin: const EdgeInsets.only(left: 6),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 14, vertical: 8),
-                                    decoration: BoxDecoration(
-                                      color: _textSize == size
-                                          ? AppColors.primaryTeal
-                                          : const Color(0xFFF1F5F9),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Text(
-                                      size,
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                        color: _textSize == size
-                                            ? Colors.white
-                                            : AppColors.textDark,
-                                      ),
-                                    ),
-                                  ),
-                                ))
-                            .toList(),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-
             // Módulos Descargados Section
-            const Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
+                const Row(
                   children: [
                     Icon(Icons.download_for_offline,
                         color: AppColors.primaryTeal),
                     SizedBox(width: 8),
                     Text(
-                      'Módulos Descargados',
+                      'Archivos Descargados',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -381,23 +269,86 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
                 Text(
-                  '1.2 GB libres',
-                  style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+                  _isContemporaneaDownloaded ? '36 MB ocupados' : '0 MB ocupados',
+                  style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
                 ),
               ],
             ),
             const SizedBox(height: 12),
-            _buildDownloadedModuleCard(
-              title: 'Época Colonial',
-              subtitle: '245 MB • Actualizado hace 2d',
-            ),
-            const SizedBox(height: 8),
-            _buildDownloadedModuleCard(
-              title: 'Construcción del Canal',
-              subtitle: '512 MB • Actualizado hace 1sem',
-            ),
 
-            const SizedBox(height: 30),
+            if (_isContemporaneaDownloaded)
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceWhite,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.borderGrey),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppColors.sandAccent,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.history_edu,
+                          color: Color(0xFF7C2D12), size: 22),
+                    ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Panamá Contemporánea',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                              color: AppColors.textDark,
+                            ),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            '36 MB • 4 materiales descargados',
+                            style: TextStyle(
+                                fontSize: 12, color: AppColors.textMuted),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline,
+                          color: AppColors.dangerRed, size: 24),
+                      tooltip: 'Eliminar descarga',
+                      onPressed: _deleteDownload,
+                    ),
+                  ],
+                ),
+              )
+            else
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceWhite,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.borderGrey),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.info_outline, color: AppColors.textMuted),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'No tienes ningún material descargado sin conexión.',
+                        style: TextStyle(fontSize: 13, color: AppColors.textMuted),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+            const SizedBox(height: 24),
 
             // Save and Logout Buttons
             CustomButton(
@@ -416,60 +367,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
       bottomNavigationBar: const CustomBottomNavBar(currentIndex: 4),
-    );
-  }
-
-  Widget _buildDownloadedModuleCard({
-    required String title,
-    required String subtitle,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceWhite,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderGrey),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: AppColors.sandAccent,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.account_balance,
-                color: Color(0xFF7C2D12), size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                    color: AppColors.textDark,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                      fontSize: 12, color: AppColors.textMuted),
-                ),
-              ],
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete_outline,
-                color: AppColors.dangerRed, size: 22),
-            onPressed: () {},
-          ),
-        ],
-      ),
     );
   }
 }

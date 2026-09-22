@@ -28,32 +28,32 @@ class _ModulesScreenState extends State<ModulesScreen> {
 
   Future<void> _loadModules() async {
     final list = await _dbService.getModules();
-    setState(() {
-      _allModules = list;
-      _filteredModules = list;
-    });
+    if (mounted) {
+      setState(() {
+        _allModules = list;
+        _applyFilter(_selectedFilter);
+      });
+    }
   }
 
   void _applyFilter(String filter) {
-    setState(() {
-      _selectedFilter = filter;
-      if (filter == 'Todos') {
-        _filteredModules = _allModules;
-      } else if (filter == 'Descargados') {
-        _filteredModules = _allModules
-            .where((m) => m.status == ModuleStatus.downloaded)
-            .toList();
-      } else if (filter == 'En curso') {
-        _filteredModules = _allModules
-            .where((m) =>
-                m.status == ModuleStatus.downloading ||
-                m.status == ModuleStatus.available)
-            .toList();
-      } else if (filter == 'Bloqueados') {
-        _filteredModules =
-            _allModules.where((m) => m.status == ModuleStatus.locked).toList();
-      }
-    });
+    _selectedFilter = filter;
+    if (filter == 'Todos') {
+      _filteredModules = _allModules;
+    } else if (filter == 'Descargados') {
+      _filteredModules = _allModules
+          .where((m) => m.status == ModuleStatus.downloaded)
+          .toList();
+    } else if (filter == 'En curso') {
+      _filteredModules = _allModules
+          .where((m) =>
+              m.status == ModuleStatus.downloading ||
+              m.status == ModuleStatus.available)
+          .toList();
+    } else if (filter == 'Bloqueados') {
+      _filteredModules =
+          _allModules.where((m) => m.status == ModuleStatus.locked).toList();
+    }
   }
 
   void _onSearch(String query) {
@@ -119,7 +119,11 @@ class _ModulesScreenState extends State<ModulesScreen> {
                                 : FontWeight.normal,
                           ),
                           onSelected: (selected) {
-                            if (selected) _applyFilter(f);
+                            if (selected) {
+                              setState(() {
+                                _applyFilter(f);
+                              });
+                            }
                           },
                         ),
                       ))
@@ -143,16 +147,9 @@ class _ModulesScreenState extends State<ModulesScreen> {
                       final module = _filteredModules[index];
                       return ModuleCard(
                         module: module,
-                        onTap: () {
-                          if (module.status == ModuleStatus.downloaded) {
-                            Navigator.pushNamed(context, AppRoutes.content);
-                          } else {
-                            Navigator.pushNamed(
-                              context,
-                              AppRoutes.moduleDetail,
-                              arguments: module,
-                            );
-                          }
+                        onTap: () async {
+                          await Navigator.pushNamed(context, AppRoutes.contemporanea);
+                          _loadModules();
                         },
                       );
                     },
