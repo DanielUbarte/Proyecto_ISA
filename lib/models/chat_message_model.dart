@@ -41,7 +41,7 @@ class ChatMessageModel {
         message:
             'Victoriano Lorenzo fue un líder indígena y general revolucionario panameño, figura clave en la **Guerra de los Mil Días**. Es recordado como el primer gran líder popular de Panamá y defensor de los derechos de los campesinos e indígenas ante las injusticias de las autoridades centrales.\n\nSu ejecución el 15 de mayo de 1903 es considerada una de las mayores tragedias de nuestra historia pre-republicana, convirtiéndolo en un símbolo eterno de resistencia nacional.',
         timestamp: '10:46 AM',
-        imageUrl: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675',
+        imageUrl: 'assets/modules/contemporanea/images/martires-panama.jpg',
         tags: ['Época Departamental', 'Guerra de los Mil Días'],
       ),
     ];

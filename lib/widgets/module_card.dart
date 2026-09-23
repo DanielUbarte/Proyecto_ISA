@@ -37,7 +37,9 @@ class ModuleCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: AppColors.primaryTeal.withValues(alpha: 0.1),
                     image: DecorationImage(
-                      image: NetworkImage(module.bannerImageUrl),
+                      image: module.bannerImageUrl.startsWith('assets/')
+                          ? AssetImage(module.bannerImageUrl) as ImageProvider
+                          : NetworkImage(module.bannerImageUrl) as ImageProvider,
                       fit: BoxFit.cover,
                       colorFilter: isLocked
                           ? ColorFilter.mode(

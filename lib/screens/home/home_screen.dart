@@ -167,7 +167,15 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               CircleAvatar(
                 radius: 28,
-                backgroundImage: NetworkImage(_user.avatarUrl),
+                backgroundColor: AppColors.primaryTeal,
+                backgroundImage: _user.avatarUrl.isNotEmpty
+                    ? (_user.avatarUrl.startsWith('assets/')
+                        ? AssetImage(_user.avatarUrl) as ImageProvider
+                        : NetworkImage(_user.avatarUrl) as ImageProvider)
+                    : null,
+                child: _user.avatarUrl.isEmpty
+                    ? const Icon(Icons.person, color: Colors.white, size: 28)
+                    : null,
               ),
               const SizedBox(width: 14),
               Expanded(

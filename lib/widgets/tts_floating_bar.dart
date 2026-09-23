@@ -42,20 +42,17 @@ class _TTSFloatingBarState extends State<TTSFloatingBar> {
         children: [
           Row(
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Image.network(
-                  'https://images.unsplash.com/photo-1544005313-94ddf0286df2',
-                  width: 44,
-                  height: 44,
-                  fit: BoxFit.cover,
-                  errorBuilder: (ctx, err, stack) => Container(
-                    width: 44,
-                    height: 44,
-                    color: AppColors.primaryTeal,
-                    child: const Icon(Icons.record_voice_over,
-                        color: Colors.white, size: 20),
-                  ),
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: AppColors.primaryTeal,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.record_voice_over,
+                  color: Colors.white,
+                  size: 24,
                 ),
               ),
               const SizedBox(width: 12),

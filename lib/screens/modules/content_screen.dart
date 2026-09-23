@@ -73,8 +73,8 @@ class _ContentScreenState extends State<ContentScreen> {
                   borderRadius: BorderRadius.circular(20),
                   child: Stack(
                     children: [
-                      Image.network(
-                        'https://images.unsplash.com/photo-1579783902614-a3fb3927b675',
+                      Image.asset(
+                        'assets/modules/contemporanea/images/martires-panama.jpg',
                         height: 220,
                         width: double.infinity,
                         fit: BoxFit.cover,

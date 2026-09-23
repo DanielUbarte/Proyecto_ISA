@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import '../../app/routes.dart';
 import '../../app/theme.dart';
+import '../../models/historical_scene_model.dart';
 import '../../services/content_service.dart';
 import 'contemporanea_data.dart';
+import 'widgets/historical_scene_widget.dart';
 import 'widgets/image_viewer_widget.dart';
 import 'widgets/pdf_viewer_widget.dart';
 import 'widgets/progress_bar_widget.dart';
 
-/// Pantalla que despliega la lista de contenidos y materiales educativos del módulo Panamá Contemporánea.
-/// Muestra el progreso de lectura actualizado en tiempo real y permite abrir documentos e imágenes.
+/// Pantalla que despliega la lista de contenidos, escenas históricas y materiales educativos del módulo Panamá Contemporánea.
+/// Muestra las escenas históricas (9 de enero de 1964) con sus imágenes locales existentes, textos de fuente e integración de narración IA.
 class ContemporaneaContent extends StatefulWidget {
   const ContemporaneaContent({super.key});
 
@@ -20,6 +22,7 @@ class _ContemporaneaContentState extends State<ContemporaneaContent> {
   final ContentService _contentService = ContentService();
 
   List<ContemporaneaMaterial> _materials = [];
+  List<HistoricalScene> _scenes = [];
   ContemporaneaMaterial? _lastOpenedMaterial;
   bool _isLoading = true;
 
@@ -32,10 +35,12 @@ class _ContemporaneaContentState extends State<ContemporaneaContent> {
   Future<void> _loadMaterials() async {
     final materials = await _contentService.getContemporaneaMaterials();
     final lastOpened = await _contentService.getLastOpenedMaterial();
+    final scenes = HistoricalScene.getContemporaneaScenes();
 
     if (mounted) {
       setState(() {
         _materials = materials;
+        _scenes = scenes;
         _lastOpenedMaterial = lastOpened;
         _isLoading = false;
       });
@@ -63,8 +68,16 @@ class _ContemporaneaContentState extends State<ContemporaneaContent> {
       MaterialPageRoute(builder: (context) => viewer),
     );
 
-    // Al regresar del visor, actualizar automáticamente la lista y el progreso
     _loadMaterials();
+  }
+
+  void _openScene(HistoricalScene scene) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HistoricalSceneWidget(scene: scene),
+      ),
+    );
   }
 
   @override
@@ -103,7 +116,7 @@ class _ContemporaneaContentState extends State<ContemporaneaContent> {
                   ),
                   const SizedBox(height: 20),
 
-                  // Botón de "Continuar desde el último material consultado" si existe
+                  // Continuar lectura previa si existe
                   if (_lastOpenedMaterial != null) ...[
                     Container(
                       padding: const EdgeInsets.all(14),
@@ -156,21 +169,60 @@ class _ContemporaneaContentState extends State<ContemporaneaContent> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
                   ],
 
-                  // Encabezado de la lista
+                  // --------------------------------------------------
+                  // SECCIÓN: ESCENAS HISTÓRICAS (9 DE ENERO DE 1964)
+                  // --------------------------------------------------
+                  const Row(
+                    children: [
+                      Icon(Icons.theater_comedy, color: AppColors.primaryTeal, size: 22),
+                      SizedBox(width: 8),
+                      Text(
+                        'Escenas Históricas Ilustradas',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textDark,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
                   const Text(
-                    'Lista de Materiales',
+                    'Explora las escenas históricas con imágenes locales y narración IA.',
                     style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textDark,
+                      fontSize: 13,
+                      color: AppColors.textMuted,
                     ),
                   ),
                   const SizedBox(height: 12),
 
-                  // Elementos de la lista de materiales
+                  ..._scenes.map((scene) => _buildSceneCard(scene)),
+
+                  const SizedBox(height: 28),
+
+                  // --------------------------------------------------
+                  // SECCIÓN: DOCUMENTOS E IMÁGENES DEL MÓDULO
+                  // --------------------------------------------------
+                  const Row(
+                    children: [
+                      Icon(Icons.folder_copy_outlined,
+                          color: AppColors.primaryTeal, size: 22),
+                      SizedBox(width: 8),
+                      Text(
+                        'Materiales Bibliográficos',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textDark,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
                   ..._materials.map((material) {
                     return _buildMaterialCard(material);
                   }),
@@ -179,6 +231,167 @@ class _ContemporaneaContentState extends State<ContemporaneaContent> {
                 ],
               ),
             ),
+    );
+  }
+
+  Widget _buildSceneCard(HistoricalScene scene) {
+    final bool hasImage = scene.imagePath != null && scene.imagePath!.isNotEmpty;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceWhite,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.borderGrey),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => _openScene(scene),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (hasImage) ...[
+                ClipRRect(
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(16)),
+                  child: Stack(
+                    children: [
+                      Image.asset(
+                        scene.imagePath!,
+                        height: 140,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
+                      Positioned(
+                        top: 10,
+                        right: 10,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.75),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.volume_up,
+                                  color: Colors.white, size: 14),
+                              SizedBox(width: 4),
+                              Text(
+                                'Narración IA',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: AppColors.sandAccent,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            scene.period,
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF7C2D12),
+                            ),
+                          ),
+                        ),
+                        const Spacer(),
+                        const Icon(Icons.timer_outlined,
+                            size: 14, color: AppColors.textMuted),
+                        const SizedBox(width: 4),
+                        Text(
+                          scene.duration,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textMuted,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      scene.title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primaryTeal,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      scene.text,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textDark,
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        const Icon(Icons.menu_book,
+                            size: 14, color: AppColors.textMuted),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            'Fuente: ${scene.source}',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: AppColors.textMuted,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const Icon(
+                          Icons.arrow_forward_ios,
+                          size: 14,
+                          color: AppColors.primaryTeal,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

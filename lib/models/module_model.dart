@@ -54,7 +54,7 @@ class ModuleModel {
         status: ModuleStatus.available,
         isOfflineAvailable: false,
         unlockRequirement: '',
-        bannerImageUrl: 'https://images.unsplash.com/photo-1513694203232-719a280e022f',
+        bannerImageUrl: 'assets/modules/contemporanea/images/martires-panama.jpg',
         lastUpdated: 'Reciente',
       ),
     ];

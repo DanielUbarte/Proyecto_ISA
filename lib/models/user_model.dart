@@ -31,7 +31,7 @@ class UserModel {
       level: 15,
       levelTitle: 'Historiador Nivel 15',
       deviceInUse: 'iPhone 13 (Apple Inc.)',
-      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb',
+      avatarUrl: '',
     );
   }
 

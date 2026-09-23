@@ -13,6 +13,7 @@ dependencies:
   shared_preferences: ^2.2.2
   flutter_pdfview: ^1.3.2
   path_provider: ^2.1.2
+  flutter_tts: ^4.2.0
 
 dev_dependencies:
   flutter_test:
@@ -24,3 +25,6 @@ flutter:
   assets:
     - assets/modules/contemporanea/documents/
     - assets/modules/contemporanea/images/
+    - assets/modules/contemporanea/images/martires-panama.jpg
+    - assets/modules/contemporanea/images/martires-panama-2.jpg
+    - assets/modules/contemporanea/images/martires.jfif

@@ -129,7 +129,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       CircleAvatar(
                         radius: 46,
-                        backgroundImage: NetworkImage(_user.avatarUrl),
+                        backgroundColor: AppColors.primaryTeal,
+                        backgroundImage: _user.avatarUrl.isNotEmpty
+                            ? (_user.avatarUrl.startsWith('assets/')
+                                ? AssetImage(_user.avatarUrl) as ImageProvider
+                                : NetworkImage(_user.avatarUrl) as ImageProvider)
+                            : null,
+                        child: _user.avatarUrl.isEmpty
+                            ? const Icon(Icons.person, color: Colors.white, size: 46)
+                            : null,
                       ),
                       Positioned(
                         bottom: 0,

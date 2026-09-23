@@ -81,12 +81,19 @@ class _ModuleDetailScreenState extends State<ModuleDetailScreen> {
               borderRadius: BorderRadius.circular(20),
               child: Stack(
                 children: [
-                  Image.network(
-                    _module.bannerImageUrl,
-                    height: 200,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
+                  _module.bannerImageUrl.startsWith('assets/')
+                      ? Image.asset(
+                          _module.bannerImageUrl,
+                          height: 200,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        )
+                      : Image.network(
+                          _module.bannerImageUrl,
+                          height: 200,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
                   Positioned(
                     bottom: 12,
                     left: 12,
