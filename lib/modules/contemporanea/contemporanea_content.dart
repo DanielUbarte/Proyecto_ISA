@@ -410,64 +410,68 @@ class _ContemporaneaContentState extends State<ContemporaneaContent> {
           width: material.viewed ? 1.5 : 1.0,
         ),
       ),
-      child: ListTile(
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: isPdf
-                ? Colors.red.shade50
-                : AppColors.primaryTeal.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: ListTile(
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          leading: Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: isPdf
+                  ? Colors.red.shade50
+                  : AppColors.primaryTeal.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              isPdf ? '📄' : '🖼️',
+              style: const TextStyle(fontSize: 20),
+            ),
           ),
-          child: Text(
-            isPdf ? '📄' : '🖼️',
-            style: const TextStyle(fontSize: 20),
+          title: Text(
+            material.title,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textDark,
+            ),
           ),
-        ),
-        title: Text(
-          material.title,
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.bold,
-            color: material.viewed ? AppColors.textDark : AppColors.textDark,
-          ),
-        ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 4),
-          child: Row(
-            children: [
-              Text(
-                isPdf ? 'Documento histórico (PDF)' : 'Imagen histórica',
-                style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
-              ),
-              const SizedBox(width: 8),
-              if (material.viewed)
-                const Row(
-                  children: [
-                    Icon(Icons.check_circle,
-                        color: AppColors.forestGreen, size: 14),
-                    SizedBox(width: 4),
-                    Text(
-                      'Visto',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.forestGreen,
-                      ),
-                    ),
-                  ],
+          subtitle: Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Row(
+              children: [
+                Text(
+                  isPdf ? 'Documento histórico (PDF)' : 'Imagen histórica',
+                  style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
                 ),
-            ],
+                const SizedBox(width: 8),
+                if (material.viewed)
+                  const Row(
+                    children: [
+                      Icon(Icons.check_circle,
+                          color: AppColors.forestGreen, size: 14),
+                      SizedBox(width: 4),
+                      Text(
+                        'Visto',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.forestGreen,
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
           ),
+          trailing: const Icon(
+            Icons.arrow_forward_ios,
+            size: 16,
+            color: AppColors.primaryTeal,
+          ),
+          onTap: () => _openMaterial(material),
         ),
-        trailing: const Icon(
-          Icons.arrow_forward_ios,
-          size: 16,
-          color: AppColors.primaryTeal,
-        ),
-        onTap: () => _openMaterial(material),
       ),
     );
   }
