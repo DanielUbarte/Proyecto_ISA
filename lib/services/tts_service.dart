@@ -86,6 +86,10 @@ class TTSService extends ChangeNotifier {
     String sceneId = '',
     int durationSeconds = 135,
   }) async {
+    if (!_isTTSEnabled || text.trim().isEmpty) {
+      return;
+    }
+
     _currentText = text;
     _currentSceneId = sceneId;
     _totalDurationSeconds = durationSeconds > 0 ? durationSeconds : 135;
@@ -134,6 +138,9 @@ class TTSService extends ChangeNotifier {
 
   /// Pausa la narración de voz.
   Future<void> pause() async {
+    if (!_isPlaying) {
+      return;
+    }
     _timer?.cancel();
     _isPlaying = false;
     _isPaused = true;

@@ -3,6 +3,7 @@ import '../../app/routes.dart';
 import '../../app/theme.dart';
 import '../../models/module_model.dart';
 import '../../services/download_service.dart';
+import '../../widgets/app_logo_leading.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/custom_button.dart';
 
@@ -59,10 +60,8 @@ class _ModuleDetailScreenState extends State<ModuleDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leadingWidth: 84,
+        leading: const AppLogoLeading(showBackButton: true),
         title: const Text('Panamá Histórica'),
         actions: [
           IconButton(

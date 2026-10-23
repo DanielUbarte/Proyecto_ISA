@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../app/routes.dart';
 import '../../app/theme.dart';
+import '../../widgets/app_logo_leading.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/tts_floating_bar.dart';
 
@@ -25,10 +26,8 @@ class _ContentScreenState extends State<ContentScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF1F5F9),
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leadingWidth: 84,
+        leading: const AppLogoLeading(showBackButton: true),
         title: Row(
           children: [
             Container(

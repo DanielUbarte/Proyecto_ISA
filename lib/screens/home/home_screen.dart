@@ -4,7 +4,9 @@ import '../../app/theme.dart';
 import '../../models/module_model.dart';
 import '../../models/user_model.dart';
 import '../../services/database_service.dart';
+import '../../widgets/app_logo_leading.dart';
 import '../../widgets/bottom_nav_bar.dart';
+import '../../widgets/historian_floating_button.dart';
 import '../../widgets/module_card.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -40,14 +42,12 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.menu, color: AppColors.primaryTeal),
-          onPressed: () {},
-        ),
+        automaticallyImplyLeading: false,
+        leading: const AppLogoLeading(),
         title: const Text(
           'Panamá Histórica',
           style: TextStyle(
-            color: AppColors.primaryTeal,
+            color: AppColors.logoNavy,
             fontWeight: FontWeight.bold,
             fontFamily: 'Serif',
           ),
@@ -144,11 +144,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.amberBadge,
-        child: const Icon(Icons.qr_code_scanner, color: Colors.white, size: 28),
-        onPressed: () => Navigator.pushNamed(context, AppRoutes.content),
-      ),
+      floatingActionButton: const HistorianFloatingButton(heroTag: 'fab_home'),
       bottomNavigationBar: const CustomBottomNavBar(currentIndex: 0),
     );
   }

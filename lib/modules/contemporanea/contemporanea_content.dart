@@ -8,6 +8,8 @@ import 'widgets/historical_scene_widget.dart';
 import 'widgets/image_viewer_widget.dart';
 import 'widgets/pdf_viewer_widget.dart';
 import 'widgets/progress_bar_widget.dart';
+import '../../widgets/app_logo_leading.dart';
+import '../../widgets/historian_floating_button.dart';
 
 /// Pantalla que despliega la lista de contenidos, escenas históricas y materiales educativos del módulo Panamá Contemporánea.
 /// Muestra las escenas históricas (9 de enero de 1964) con sus imágenes locales existentes, textos de fuente e integración de narración IA.
@@ -87,10 +89,8 @@ class _ContemporaneaContentState extends State<ContemporaneaContent> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leadingWidth: 84,
+        leading: const AppLogoLeading(showBackButton: true),
         title: const Text('Panamá Contemporánea'),
         actions: [
           IconButton(
@@ -231,6 +231,7 @@ class _ContemporaneaContentState extends State<ContemporaneaContent> {
                 ],
               ),
             ),
+      floatingActionButton: const HistorianFloatingButton(heroTag: 'fab_contemporanea_content'),
     );
   }
 

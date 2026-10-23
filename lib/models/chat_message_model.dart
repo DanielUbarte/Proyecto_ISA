@@ -1,3 +1,6 @@
+import 'rag_reference_model.dart';
+
+/// Modelo para los mensajes del chat del Historiador IA.
 class ChatMessageModel {
   final String id;
   final String sender; // 'user' or 'ai'
@@ -6,6 +9,8 @@ class ChatMessageModel {
   final String? cardTitle;
   final String? imageUrl;
   final List<String>? tags;
+  final List<RAGReference>? references;
+  final bool isAbstention;
 
   const ChatMessageModel({
     required this.id,
@@ -15,9 +20,12 @@ class ChatMessageModel {
     this.cardTitle,
     this.imageUrl,
     this.tags,
+    this.references,
+    this.isAbstention = false,
   });
 
   bool get isUser => sender == 'user';
+  bool get hasReferences => references != null && references!.isNotEmpty;
 
   static List<ChatMessageModel> getMockHistory() {
     return [
@@ -25,24 +33,32 @@ class ChatMessageModel {
         id: 'msg_1',
         sender: 'ai',
         message:
-            '¡Hola, Historiador! Soy tu guía virtual para el fascinante recorrido por el pasado de nuestro istmo. ¿Tienes alguna pregunta específica sobre la historia de Panamá?',
+            '¡Hola! Soy tu Historiador IA de Panamá Histórica. Mi función es responder tus preguntas utilizando exclusivamente los libros, documentos y testimonios históricos disponibles en la aplicación.\n\nPuedes consultarme sobre la gesta patriótica del 9 de enero de 1964, los antecedentes canaleros, testimonios de los protagonistas y las fuentes documentales disponibles.',
         timestamp: '10:45 AM',
       ),
       const ChatMessageModel(
         id: 'msg_2',
         sender: 'user',
-        message: '¿Quién fue Victoriano Lorenzo?',
+        message: '¿Por qué marcharon los estudiantes del Instituto Nacional el 9 de enero de 1964?',
         timestamp: '10:46 AM',
       ),
       const ChatMessageModel(
         id: 'msg_3',
         sender: 'ai',
-        cardTitle: 'El Caudillo del Chorrillo',
+        cardTitle: 'Reclamación Patriótica del 9 de Enero',
         message:
-            'Victoriano Lorenzo fue un líder indígena y general revolucionario panameño, figura clave en la **Guerra de los Mil Días**. Es recordado como el primer gran líder popular de Panamá y defensor de los derechos de los campesinos e indígenas ante las injusticias de las autoridades centrales.\n\nSu ejecución el 15 de mayo de 1903 es considerada una de las mayores tragedias de nuestra historia pre-republicana, convirtiéndolo en un símbolo eterno de resistencia nacional.',
+            'El 9 de enero de 1964, aproximadamente 200 estudiantes del Instituto Nacional marcharon de forma pacífica hacia la Escuela Secundaria de Balboa (Balboa High School) en la Zona del Canal.\n\nSu propósito fundamental era hacer cumplir los acuerdos vigentes entre Panamá y los Estados Unidos (acuerdo Chiari-Kennedy), que estipulaban que la bandera panameña debía ser izada junto a la estadounidense en los sitios públicos de la Zona del Canal. Los estudiantes solicitaron la histórica bandera de su plantel al Rector del Instituto Nacional para enarbolarla con honor.',
         timestamp: '10:46 AM',
         imageUrl: 'assets/modules/contemporanea/images/martires-panama.jpg',
-        tags: ['Época Departamental', 'Guerra de los Mil Días'],
+        tags: ['Gesta de 1964', 'Instituto Nacional', 'Soberanía Canalera'],
+        references: [
+          RAGReference(
+            documentTitle: 'El 9 de enero de 1964: lo que no me contaron (Wendy Tribaldos, 2023)',
+            section: 'Introducción: un porqué / Arropados bajo una enseña',
+            page: 11,
+            excerpt: 'Unos 200 estudiantes del Instituto Nacional marcharon pacíficamente a la escuela secundaria de Balboa en la Zona del Canal, para protestar por el incumplimiento de acuerdos entre Panamá y Estados Unidos relativos a la izada de las banderas de ambos países.',
+          ),
+        ],
       ),
     ];
   }

@@ -5,5 +5,6 @@ void main() {
   testWidgets('Panama Historica App smoke test', (WidgetTester tester) async {
     await tester.pumpWidget(const PanamaHistoricaApp());
     expect(find.byType(PanamaHistoricaApp), findsOneWidget);
+    await tester.pumpAndSettle();
   });
 }

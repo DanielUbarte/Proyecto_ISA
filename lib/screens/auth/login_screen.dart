@@ -3,6 +3,7 @@ import '../../app/routes.dart';
 import '../../app/theme.dart';
 import '../../services/auth_service.dart';
 import '../../services/tts_service.dart';
+import '../../widgets/app_logo_leading.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/custom_text_field.dart';
 
@@ -51,32 +52,43 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 30),
+              const Align(
+                alignment: Alignment.topLeft,
+                child: AppLogoLeading(),
+              ),
+              const SizedBox(height: 16),
               // App Logo Icon
-              Container(
-                width: 72,
-                height: 72,
+              GestureDetector(
+                onTap: () => Navigator.pushReplacementNamed(context, AppRoutes.home),
+                child: Container(
+                width: 84,
+                height: 84,
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryTeal,
-                  borderRadius: BorderRadius.circular(20),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(color: AppColors.borderGrey),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primaryTeal.withValues(alpha: 0.25),
-                      blurRadius: 15,
+                      color: AppColors.patrioticBlue.withValues(alpha: 0.15),
+                      blurRadius: 16,
                       offset: const Offset(0, 6),
                     ),
                   ],
                 ),
-                child: const Icon(
-                  Icons.account_balance,
-                  size: 38,
-                  color: Colors.white,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
+            ),
               const SizedBox(height: 20),
               // Title & Subtitle
               const Text(

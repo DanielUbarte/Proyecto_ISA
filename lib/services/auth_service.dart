@@ -44,6 +44,17 @@ class AuthService {
     return _currentUser!;
   }
 
+  /// Updates student profile in memory.
+  void updateProfile({String? name, String? email, String? avatarUrl}) {
+    if (_currentUser != null) {
+      _currentUser = _currentUser!.copyWith(
+        name: name,
+        email: email,
+        avatarUrl: avatarUrl,
+      );
+    }
+  }
+
   /// Simulates sign out.
   Future<void> signOut() async {
     await Future.delayed(const Duration(milliseconds: 300));

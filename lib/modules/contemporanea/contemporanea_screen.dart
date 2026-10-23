@@ -3,8 +3,10 @@ import '../../app/routes.dart';
 import '../../app/theme.dart';
 import '../../services/content_service.dart';
 import '../../services/download_service.dart';
+import '../../widgets/app_logo_leading.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/custom_button.dart';
+import '../../widgets/historian_floating_button.dart';
 
 /// Pantalla principal del módulo "Panamá Contemporánea".
 /// Muestra la información básica, total de materiales, estado y progreso de descarga,
@@ -111,10 +113,8 @@ class _ContemporaneaScreenState extends State<ContemporaneaScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leadingWidth: 84,
+        leading: const AppLogoLeading(showBackButton: true),
         title: const Text('Panamá Contemporánea'),
         actions: [
           IconButton(
@@ -385,6 +385,7 @@ class _ContemporaneaScreenState extends State<ContemporaneaScreen> {
                 ],
               ),
             ),
+      floatingActionButton: const HistorianFloatingButton(heroTag: 'fab_contemporanea'),
       bottomNavigationBar: const CustomBottomNavBar(currentIndex: 1),
     );
   }

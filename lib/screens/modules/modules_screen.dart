@@ -3,7 +3,9 @@ import '../../app/routes.dart';
 import '../../app/theme.dart';
 import '../../models/module_model.dart';
 import '../../services/database_service.dart';
+import '../../widgets/app_logo_leading.dart';
 import '../../widgets/bottom_nav_bar.dart';
+import '../../widgets/historian_floating_button.dart';
 import '../../widgets/module_card.dart';
 
 class ModulesScreen extends StatefulWidget {
@@ -70,6 +72,8 @@ class _ModulesScreenState extends State<ModulesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: const AppLogoLeading(),
         title: const Text('Módulos de Historia'),
         centerTitle: false,
       ),
@@ -157,6 +161,7 @@ class _ModulesScreenState extends State<ModulesScreen> {
           ),
         ],
       ),
+      floatingActionButton: const HistorianFloatingButton(heroTag: 'fab_modules'),
       bottomNavigationBar: const CustomBottomNavBar(currentIndex: 1),
     );
   }

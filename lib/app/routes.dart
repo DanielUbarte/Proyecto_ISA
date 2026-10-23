@@ -9,11 +9,13 @@ import '../screens/historian/historian_screen.dart';
 import '../screens/progress/progress_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/profile/settings_screen.dart';
+import '../screens/splash/splash_screen.dart';
 import '../modules/contemporanea/contemporanea_screen.dart';
 import '../modules/contemporanea/contemporanea_content.dart';
 
 class AppRoutes {
-  static const String login = '/';
+  static const String splash = '/';
+  static const String login = '/login';
   static const String register = '/register';
   static const String home = '/home';
   static const String modules = '/modules';
@@ -28,6 +30,7 @@ class AppRoutes {
 
   static Map<String, WidgetBuilder> get routes {
     return {
+      splash: (context) => const SplashScreen(),
       login: (context) => const LoginScreen(),
       register: (context) => const RegisterScreen(),
       home: (context) => const HomeScreen(),

@@ -5,8 +5,10 @@ import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
 import '../../services/download_service.dart';
 import '../../services/tts_service.dart';
+import '../../widgets/app_logo_leading.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/custom_button.dart';
+import '../../widgets/historian_floating_button.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -100,14 +102,165 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  void _showAvatarPickerModal() {
+    final List<Map<String, String>> avatarOptions = [
+      {'title': 'Sello Oficial', 'path': 'assets/images/logo.png', 'desc': 'Emblema Panamá Histórica'},
+      {'title': 'Gesta de 1964', 'path': 'assets/modules/contemporanea/images/martires-panama.jpg', 'desc': 'Monumento a los Mártires'},
+      {'title': 'Por Defecto', 'path': '', 'desc': 'Silueta estudiantil estándar'},
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardTheme.color ?? Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 48,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.borderGrey,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Row(
+                children: [
+                  Icon(Icons.photo_camera, color: AppColors.logoGold, size: 24),
+                  SizedBox(width: 10),
+                  Text(
+                    'Cambiar Foto de Perfil',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Serif'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              ...avatarOptions.map((opt) {
+                final isSelected = _user.avatarUrl == opt['path'];
+                return ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: AppColors.logoNavy.withValues(alpha: 0.1),
+                    backgroundImage: opt['path']!.isNotEmpty ? AssetImage(opt['path']!) : null,
+                    child: opt['path']!.isEmpty
+                        ? const Icon(Icons.person, color: AppColors.logoNavy)
+                        : null,
+                  ),
+                  title: Text(opt['title']!, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Text(opt['desc']!, style: const TextStyle(fontSize: 12)),
+                  trailing: isSelected
+                      ? const Icon(Icons.check_circle, color: AppColors.logoGold)
+                      : null,
+                  onTap: () {
+                    Navigator.pop(context);
+                    _authService.updateProfile(avatarUrl: opt['path']!);
+                    setState(() {
+                      _user = _user.copyWith(avatarUrl: opt['path']!);
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Foto de perfil actualizada.')),
+                    );
+                  },
+                );
+              }),
+              const SizedBox(height: 12),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showEditProfileDialog() {
+    final nameCtrl = TextEditingController(text: _user.name);
+    final emailCtrl = TextEditingController(text: _user.email);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Row(
+            children: [
+              Icon(Icons.edit, color: AppColors.logoGold, size: 22),
+              SizedBox(width: 8),
+              Text('Editar Perfil', style: TextStyle(fontFamily: 'Serif')),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Nombre Completo',
+                  prefixIcon: Icon(Icons.person_outline),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: emailCtrl,
+                keyboardType: TextInputType.emailAddress,
+                decoration: const InputDecoration(
+                  labelText: 'Correo Electrónico',
+                  prefixIcon: Icon(Icons.email_outlined),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.logoNavy,
+                foregroundColor: Colors.white,
+                minimumSize: const Size(110, 44),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: () {
+                final newName = nameCtrl.text.trim();
+                final newEmail = emailCtrl.text.trim();
+                if (newName.isEmpty || newEmail.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('El nombre y el correo no pueden estar vacíos.')),
+                  );
+                  return;
+                }
+                _authService.updateProfile(name: newName, email: newEmail);
+                setState(() {
+                  _user = _user.copyWith(name: newName, email: newEmail);
+                });
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Datos del estudiante actualizados.')),
+                );
+              },
+              child: const Text('Guardar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () {},
-        ),
+        automaticallyImplyLeading: false,
+        leading: const AppLogoLeading(),
         title: const Text('Panamá Histórica'),
         actions: [
           IconButton(
@@ -129,7 +282,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       CircleAvatar(
                         radius: 46,
-                        backgroundColor: AppColors.primaryTeal,
+                        backgroundColor: AppColors.logoNavy,
                         backgroundImage: _user.avatarUrl.isNotEmpty
                             ? (_user.avatarUrl.startsWith('assets/')
                                 ? AssetImage(_user.avatarUrl) as ImageProvider
@@ -142,27 +295,68 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Positioned(
                         bottom: 0,
                         right: 0,
-                        child: Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: const BoxDecoration(
-                            color: AppColors.primaryTeal,
-                            shape: BoxShape.circle,
+                        child: Tooltip(
+                          message: 'Cambiar foto de perfil',
+                          child: InkWell(
+                            onTap: _showAvatarPickerModal,
+                            borderRadius: BorderRadius.circular(20),
+                            child: Container(
+                              padding: const EdgeInsets.all(7),
+                              decoration: BoxDecoration(
+                                color: AppColors.logoNavy,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: AppColors.logoGold, width: 2),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.25),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(Icons.camera_alt,
+                                  color: Colors.white, size: 16),
+                            ),
                           ),
-                          child: const Icon(Icons.edit,
-                              color: Colors.white, size: 16),
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
-                  Text(
-                    _user.name,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textDark,
-                      fontFamily: 'Serif',
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _user.name,
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textDark,
+                          fontFamily: 'Serif',
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Tooltip(
+                        message: 'Editar nombre o correo',
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: _showEditProfileDialog,
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: AppColors.logoGold.withValues(alpha: 0.15),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppColors.logoGold.withValues(alpha: 0.6),
+                                width: 1.2,
+                              ),
+                            ),
+                            child: const Icon(Icons.edit,
+                                size: 16, color: AppColors.logoNavy),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 2),
                   Text(
@@ -374,6 +568,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
+      floatingActionButton: const HistorianFloatingButton(heroTag: 'fab_profile'),
       bottomNavigationBar: const CustomBottomNavBar(currentIndex: 4),
     );
   }

@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../app/theme.dart';
-import '../../models/progress_model.dart';
+import '../../models/module_model.dart';
+import '../../modules/contemporanea/contemporanea_data.dart';
+import '../../services/content_service.dart';
 import '../../services/database_service.dart';
+import '../../widgets/app_logo_leading.dart';
 import '../../widgets/bottom_nav_bar.dart';
+import '../../widgets/historian_floating_button.dart';
 import '../../widgets/stat_card.dart';
 
 class ProgressScreen extends StatefulWidget {
@@ -14,7 +18,10 @@ class ProgressScreen extends StatefulWidget {
 
 class _ProgressScreenState extends State<ProgressScreen> {
   final DatabaseService _dbService = DatabaseService();
-  StudentProgressModel? _progress;
+  final ContentService _contentService = ContentService();
+
+  List<ModuleModel> _modules = [];
+  List<ContemporaneaMaterial> _materials = [];
   bool _isLoading = true;
 
   @override
@@ -24,32 +31,39 @@ class _ProgressScreenState extends State<ProgressScreen> {
   }
 
   Future<void> _loadProgress() async {
-    final res = await _dbService.getStudentProgress();
-    setState(() {
-      _progress = res;
-      _isLoading = false;
-    });
+    final modules = await _dbService.getModules();
+    final materials = await _contentService.getContemporaneaMaterials();
+
+    if (mounted) {
+      setState(() {
+        _modules = modules;
+        _materials = materials;
+        _isLoading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: const AppLogoLeading(),
         title: const Text('Progreso y Analítica'),
         centerTitle: false,
       ),
-      body: _isLoading || _progress == null
-          ? const Center(child: CircularProgressIndicator())
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: AppColors.logoNavy))
           : SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Overall Progress Header Card
+                  // Overall Progress Header Card (En cero como se solicitó)
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceWhite,
+                      color: Theme.of(context).cardTheme.color ?? AppColors.surfaceWhite,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: AppColors.borderGrey),
                     ),
@@ -73,11 +87,11 @@ class _ProgressScreenState extends State<ProgressScreen> {
                                 ),
                                 SizedBox(height: 4),
                                 Text(
-                                  '50%',
+                                  '0%',
                                   style: TextStyle(
                                     fontSize: 32,
                                     fontWeight: FontWeight.bold,
-                                    color: AppColors.primaryTeal,
+                                    color: AppColors.logoNavy,
                                     fontFamily: 'Serif',
                                   ),
                                 ),
@@ -87,15 +101,15 @@ class _ProgressScreenState extends State<ProgressScreen> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFDCFCE7),
+                                color: AppColors.logoNavy.withValues(alpha: 0.08),
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: const Text(
-                                'Estudiante Activo',
+                                'Evaluación en otro módulo',
                                 style: TextStyle(
-                                  color: Color(0xFF166534),
+                                  color: AppColors.logoNavy,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 12,
+                                  fontSize: 11,
                                 ),
                               ),
                             ),
@@ -105,11 +119,16 @@ class _ProgressScreenState extends State<ProgressScreen> {
                         ClipRRect(
                           borderRadius: BorderRadius.circular(6),
                           child: const LinearProgressIndicator(
-                            value: 0.5,
+                            value: 0.0, // En cero según requerimiento
                             minHeight: 10,
                             backgroundColor: Color(0xFFE2E8F0),
-                            color: AppColors.primaryTeal,
+                            color: AppColors.logoNavy,
                           ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'El progreso general y la nota promedio se calcularán al completar el módulo evaluativo.',
+                          style: TextStyle(fontSize: 11, color: AppColors.textMuted),
                         ),
                       ],
                     ),
@@ -122,27 +141,26 @@ class _ProgressScreenState extends State<ProgressScreen> {
                       Expanded(
                         child: StatCard(
                           label: 'Módulos',
-                          value:
-                              '${_progress!.completedModules} / ${_progress!.totalModules}',
+                          value: '0 / ${_modules.length}',
                           icon: Icons.menu_book,
                         ),
                       ),
                       const SizedBox(width: 12),
-                      Expanded(
+                      const Expanded(
                         child: StatCard(
                           label: 'Nota Promedio',
-                          value: '${_progress!.averageGrade} / 5.0',
+                          value: '0.0 / 5.0',
                           icon: Icons.star,
-                          accentColor: AppColors.forestGreen,
+                          accentColor: AppColors.logoGold,
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 24),
 
-                  // Module Breakdown Section
+                  // Module Breakdown Section (Solo los módulos presentes actualmente)
                   const Text(
-                    'Progreso por Módulo',
+                    'Progreso por Módulo Disponible',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -150,14 +168,43 @@ class _ProgressScreenState extends State<ProgressScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  _buildModuleProgressItem('Época Colonial Española', 1.0, 'Completado'),
-                  _buildModuleProgressItem('Construcción del Canal', 0.65, '65%'),
-                  _buildModuleProgressItem('Independencia de Panamá', 0.20, '20%'),
-                  _buildModuleProgressItem('Panamá Contemporánea', 0.0, 'Bloqueado'),
+
+                  if (_modules.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 12.0),
+                      child: Text('No hay módulos disponibles en este momento.'),
+                    )
+                  else
+                    ..._modules.map((module) {
+                      double progressVal = 0.0;
+                      String progressLabel = 'Disponible';
+
+                      if (module.id == 'mod_contemporanea' && _materials.isNotEmpty) {
+                        final viewedCount = _materials.where((m) => m.viewed).length;
+                        progressVal = viewedCount / _materials.length;
+                        if (progressVal == 1.0) {
+                          progressLabel = 'Completado';
+                        } else if (viewedCount > 0) {
+                          progressLabel =
+                              '${(progressVal * 100).toInt()}% ($viewedCount/${_materials.length})';
+                        } else if (module.isOfflineAvailable) {
+                          progressLabel = 'Descargado';
+                        }
+                      } else if (module.isOfflineAvailable) {
+                        progressVal = 1.0;
+                        progressLabel = 'Descargado';
+                      }
+
+                      return _buildModuleProgressItem(
+                        module.title,
+                        progressVal,
+                        progressLabel,
+                      );
+                    }),
 
                   const SizedBox(height: 24),
 
-                  // Recent Activity Timeline
+                  // Recent Activity Timeline (Contextual a los módulos presentes)
                   const Text(
                     'Actividad Reciente',
                     style: TextStyle(
@@ -167,56 +214,28 @@ class _ProgressScreenState extends State<ProgressScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  ..._progress!.recentActivities.map((act) => Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: AppColors.surfaceWhite,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppColors.borderGrey),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryTeal.withValues(alpha: 0.1),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(Icons.check_circle_outline,
-                                  color: AppColors.primaryTeal, size: 20),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    act.title,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                      color: AppColors.textDark,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    '${act.timestamp} • Nota: ${act.score} • Duración: ${act.duration}',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.textMuted,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      )),
+
+                  _buildActivityItem(
+                    title: 'Gesta de 1964: Lectura de escenas históricas',
+                    subtitle: 'Hoy • Panamá Contemporánea • 15m',
+                    icon: Icons.auto_stories,
+                  ),
+                  _buildActivityItem(
+                    title: 'Consulta al Historiador IA: Tratado Chiari-Kennedy',
+                    subtitle: 'Hoy • Consulta documental validada • 8m',
+                    icon: Icons.psychology,
+                  ),
+                  _buildActivityItem(
+                    title: 'Libro de Wendy Tribaldos: El 9 de enero de 1964',
+                    subtitle: 'Ayer • Documento oficial MEDUCA • 25m',
+                    icon: Icons.menu_book,
+                  ),
+
                   const SizedBox(height: 20),
                 ],
               ),
             ),
+      floatingActionButton: const HistorianFloatingButton(heroTag: 'fab_progress'),
       bottomNavigationBar: const CustomBottomNavBar(currentIndex: 3),
     );
   }
@@ -227,7 +246,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surfaceWhite,
+        color: Theme.of(context).cardTheme.color ?? AppColors.surfaceWhite,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.borderGrey),
       ),
@@ -237,12 +256,14 @@ class _ProgressScreenState extends State<ProgressScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: AppColors.textDark,
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: AppColors.textDark,
+                  ),
                 ),
               ),
               Row(
@@ -253,14 +274,14 @@ class _ProgressScreenState extends State<ProgressScreen> {
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                       color: isCompleted
-                          ? AppColors.forestGreen
+                          ? AppColors.logoForest
                           : AppColors.textMuted,
                     ),
                   ),
                   if (isCompleted) ...[
                     const SizedBox(width: 4),
                     const Icon(Icons.check_circle,
-                        color: AppColors.forestGreen, size: 16),
+                        color: AppColors.logoForest, size: 16),
                   ],
                 ],
               ),
@@ -270,7 +291,59 @@ class _ProgressScreenState extends State<ProgressScreen> {
           LinearProgressIndicator(
             value: progress,
             backgroundColor: const Color(0xFFE2E8F0),
-            color: isCompleted ? AppColors.forestGreen : AppColors.primaryTeal,
+            color: isCompleted ? AppColors.logoForest : AppColors.logoNavy,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActivityItem({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardTheme.color ?? AppColors.surfaceWhite,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.borderGrey),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppColors.logoNavy.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: AppColors.logoNavy, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: AppColors.textDark,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textMuted,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
