@@ -81,14 +81,14 @@ class AppLogoLeading extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        const SizedBox(width: 4),
         logoButton,
         IconButton(
           padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+          visualDensity: VisualDensity.compact,
+          constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
           icon: const Icon(
             Icons.arrow_back_ios_new,
-            size: 18,
+            size: 16,
             color: AppColors.logoNavy,
           ),
           tooltip: 'Volver',

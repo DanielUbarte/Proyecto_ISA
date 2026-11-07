@@ -18,6 +18,8 @@ import '../screens/teacher/teacher_documents_screen.dart';
 import '../screens/teacher/teacher_add_document_screen.dart';
 import '../screens/teacher/teacher_students_screen.dart';
 import '../screens/teacher/teacher_evaluations_screen.dart';
+import '../screens/teacher/evaluation_register_screen.dart';
+import '../models/academic_evaluation_model.dart';
 
 class AppRoutes {
   static const String splash = '/';
@@ -41,6 +43,7 @@ class AppRoutes {
   static const String teacherAddDocument = '/teacher/add_document';
   static const String teacherStudents = '/teacher/students';
   static const String teacherEvaluations = '/teacher/evaluations';
+  static const String teacherRegisterEvaluation = '/teacher/evaluations/register';
 
   static Map<String, WidgetBuilder> get routes {
     return {
@@ -64,7 +67,27 @@ class AppRoutes {
       teacherDocuments: (context) => const TeacherDocumentsScreen(),
       teacherAddDocument: (context) => const TeacherAddDocumentScreen(),
       teacherStudents: (context) => const TeacherStudentsScreen(),
-      teacherEvaluations: (context) => const TeacherEvaluationsScreen(),
+      teacherEvaluations: (context) {
+        final args = ModalRoute.of(context)?.settings.arguments;
+        if (args is String) {
+          return TeacherEvaluationsScreen(initialStudentId: args);
+        } else if (args is Map<String, dynamic>) {
+          return TeacherEvaluationsScreen(
+            initialStudentId: args['studentId'] as String?,
+            initialTab: args['initialTab'] as int? ?? 0,
+          );
+        }
+        return const TeacherEvaluationsScreen();
+      },
+      teacherRegisterEvaluation: (context) {
+        final args = ModalRoute.of(context)?.settings.arguments;
+        if (args is AcademicEvaluationModel) {
+          return EvaluationRegisterScreen(evaluationToEdit: args);
+        } else if (args is String) {
+          return EvaluationRegisterScreen(initialStudentId: args);
+        }
+        return const EvaluationRegisterScreen();
+      },
     };
   }
 }
