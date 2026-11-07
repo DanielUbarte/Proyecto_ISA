@@ -1,9 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../../app/theme.dart';
 import '../../../services/content_service.dart';
 
 /// Visor interactivo de imágenes históricas del módulo Panamá Contemporánea.
 /// Permite zoom táctil, paneo y desplazamiento sin salir de la aplicación.
+/// Compatible tanto con assets del proyecto como con imágenes locales subidas por docentes.
 class ImageViewerWidget extends StatefulWidget {
   final String materialId;
   final String title;
@@ -45,6 +47,46 @@ class _ImageViewerWidgetState extends State<ImageViewerWidget> {
     super.dispose();
   }
 
+  Widget _buildImage() {
+    if (widget.assetPath.startsWith('assets/')) {
+      return Image.asset(
+        widget.assetPath,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) => _buildErrorWidget(),
+      );
+    } else {
+      final file = File(widget.assetPath);
+      if (file.existsSync()) {
+        return Image.file(
+          file,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) => _buildErrorWidget(),
+        );
+      } else {
+        return _buildErrorWidget();
+      }
+    }
+  }
+
+  Widget _buildErrorWidget() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      color: AppColors.backgroundLight,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.broken_image, size: 64, color: AppColors.textMuted),
+          const SizedBox(height: 12),
+          Text(
+            'No se pudo cargar la imagen: ${widget.assetPath}',
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.textDark),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -73,29 +115,7 @@ class _ImageViewerWidgetState extends State<ImageViewerWidget> {
             boundaryMargin: const EdgeInsets.all(20),
             minScale: 0.8,
             maxScale: 4.0,
-            child: Image.asset(
-              widget.assetPath,
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  padding: const EdgeInsets.all(20),
-                  color: AppColors.backgroundLight,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.broken_image,
-                          size: 64, color: AppColors.textMuted),
-                      const SizedBox(height: 12),
-                      Text(
-                        'No se pudo cargar la imagen: ${widget.assetPath}',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(color: AppColors.textDark),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
+            child: _buildImage(),
           ),
         ),
       ),

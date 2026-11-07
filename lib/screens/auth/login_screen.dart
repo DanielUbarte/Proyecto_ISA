@@ -27,17 +27,25 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _handleLogin() async {
     setState(() => _isLoading = true);
     try {
-      await _authService.signIn(
+      final user = await _authService.signIn(
         email: _emailController.text,
         password: _passwordController.text,
       );
       if (mounted) {
-        Navigator.pushReplacementNamed(context, AppRoutes.home);
+        // Redirección inteligente según el rol autenticado:
+        if (user.isTeacher) {
+          Navigator.pushReplacementNamed(context, AppRoutes.teacherDashboard);
+        } else {
+          Navigator.pushReplacementNamed(context, AppRoutes.home);
+        }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: AppColors.dangerRed,
+          ),
         );
       }
     } finally {
@@ -65,30 +73,30 @@ class _LoginScreenState extends State<LoginScreen> {
               GestureDetector(
                 onTap: () => Navigator.pushReplacementNamed(context, AppRoutes.home),
                 child: Container(
-                width: 84,
-                height: 84,
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(22),
-                  border: Border.all(color: AppColors.borderGrey),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.patrioticBlue.withValues(alpha: 0.15),
-                      blurRadius: 16,
-                      offset: const Offset(0, 6),
+                  width: 84,
+                  height: 84,
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(22),
+                    border: Border.all(color: AppColors.borderGrey),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.patrioticBlue.withValues(alpha: 0.15),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      fit: BoxFit.contain,
                     ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(14),
-                  child: Image.asset(
-                    'assets/images/logo.png',
-                    fit: BoxFit.contain,
                   ),
                 ),
               ),
-            ),
               const SizedBox(height: 20),
               // Title & Subtitle
               const Text(
@@ -191,7 +199,73 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 28),
+
+              const SizedBox(height: 20),
+
+              // Acceso Exclusivo para Docentes (Independiente)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceWhite,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: AppColors.logoGold.withValues(alpha: 0.6)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.logoGoldBg,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.school, color: AppColors.logoGoldDark, size: 22),
+                    ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '¿Eres Profesor o Educador?',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.logoNavy,
+                            ),
+                          ),
+                          Text(
+                            'Ingresa al panel de gestión y biblioteca',
+                            style: TextStyle(fontSize: 11, color: AppColors.textMuted),
+                          ),
+                        ],
+                      ),
+                    ),
+                    TextButton(
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.logoNavy,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      ),
+                      onPressed: () {
+                        Navigator.pushNamed(context, AppRoutes.teacherLogin);
+                      },
+                      child: const Row(
+                        children: [
+                          Text(
+                            'Portal Docente',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
+                          SizedBox(width: 4),
+                          Icon(Icons.arrow_forward, size: 14),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
               // Lectura en voz alta Accessibility toggle
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -227,7 +301,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 32),
               const Text(
                 '© 2024 Panamá Histórica AR. Todos los derechos reservados.',
                 textAlign: TextAlign.center,

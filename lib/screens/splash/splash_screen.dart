@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../app/routes.dart';
 import '../../app/theme.dart';
+import '../../services/auth_service.dart';
 
 /// Pantalla de bienvenida (Splash Screen) con el logotipo oficial
 /// y la identidad patriótica e histórica de Panamá.
@@ -37,11 +38,17 @@ class _SplashScreenState extends State<SplashScreen>
     );
 
     _controller.forward();
+    AuthService().loadSession();
 
-    // Navegar después de 2.2 segundos hacia el Login
+    // Navegar después de 2.2 segundos hacia la ruta correspondiente según rol y sesión activa
     _navTimer = Timer(const Duration(milliseconds: 2300), () {
       if (mounted) {
-        Navigator.pushReplacementNamed(context, AppRoutes.login);
+        final user = AuthService().currentUser;
+        if (user != null && user.isTeacher) {
+          Navigator.pushReplacementNamed(context, AppRoutes.teacherDashboard);
+        } else {
+          Navigator.pushReplacementNamed(context, AppRoutes.login);
+        }
       }
     });
   }

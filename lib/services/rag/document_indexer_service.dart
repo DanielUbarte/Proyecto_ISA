@@ -19,6 +19,13 @@ class DocumentIndexerService {
   List<String> get availableDocumentTitles => _documentTitles.toList();
   bool get isInitialized => _isInitialized;
 
+  /// Restablece el índice para pruebas unitarias.
+  void resetForTesting() {
+    _chunks.clear();
+    _documentTitles.clear();
+    _isInitialized = false;
+  }
+
   /// Inicializa el índice cargando los documentos estructurados y escenas históricas locales.
   Future<void> initialize({String? customJsonContent}) async {
     if (_isInitialized) return;
@@ -129,6 +136,73 @@ class DocumentIndexerService {
     }
 
     return addedChunks;
+  }
+
+  /// Incorpora fragmentos al índice a partir de texto plano extraído de un documento o recurso educativo.
+  Future<int> addDocumentFromRawText({
+    required String docId,
+    required String documentTitle,
+    required String sectionTitle,
+    required String text,
+  }) async {
+    // Remover fragmentos previos del mismo documento para evitar duplicidad
+    removeDocumentChunks(docId);
+
+    final paragraphs = text.split(RegExp(r'\n\s*\n'));
+    int addedCount = 0;
+    var currentChunk = '';
+    int chunkIdx = 1;
+
+    for (final p in paragraphs) {
+      final clean = p.trim().replaceAll('\n', ' ');
+      if (clean.isEmpty) continue;
+
+      if ((currentChunk.length + clean.length) < 800) {
+        currentChunk = currentChunk.isEmpty ? clean : '$currentChunk $clean';
+      } else {
+        if (currentChunk.isNotEmpty) {
+          _chunks.add(DocumentChunk(
+            id: '${docId}_c$chunkIdx',
+            docId: docId,
+            documentTitle: documentTitle,
+            section: sectionTitle,
+            page: 1,
+            text: currentChunk,
+          ));
+          chunkIdx++;
+          addedCount++;
+        }
+        currentChunk = clean;
+      }
+    }
+
+    if (currentChunk.isNotEmpty) {
+      _chunks.add(DocumentChunk(
+        id: '${docId}_c$chunkIdx',
+        docId: docId,
+        documentTitle: documentTitle,
+        section: sectionTitle,
+        page: 1,
+        text: currentChunk,
+      ));
+      addedCount++;
+    }
+
+    _documentTitles.add(documentTitle);
+    return addedCount;
+  }
+
+  /// Retira todos los fragmentos asociados a un documento despublicado, archivado o eliminado.
+  void removeDocumentChunks(String docId) {
+    _chunks.removeWhere((chunk) => chunk.docId == docId);
+    _recomputeDocumentTitles();
+  }
+
+  void _recomputeDocumentTitles() {
+    _documentTitles.clear();
+    for (final c in _chunks) {
+      _documentTitles.add(c.documentTitle);
+    }
   }
 
   int _parsePageNumber(String sourcePage) {

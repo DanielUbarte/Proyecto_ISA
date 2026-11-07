@@ -12,6 +12,12 @@ import '../screens/profile/settings_screen.dart';
 import '../screens/splash/splash_screen.dart';
 import '../modules/contemporanea/contemporanea_screen.dart';
 import '../modules/contemporanea/contemporanea_content.dart';
+import '../screens/teacher/teacher_login_screen.dart';
+import '../screens/teacher/teacher_dashboard_screen.dart';
+import '../screens/teacher/teacher_documents_screen.dart';
+import '../screens/teacher/teacher_add_document_screen.dart';
+import '../screens/teacher/teacher_students_screen.dart';
+import '../screens/teacher/teacher_evaluations_screen.dart';
 
 class AppRoutes {
   static const String splash = '/';
@@ -28,6 +34,14 @@ class AppRoutes {
   static const String contemporanea = '/contemporanea';
   static const String contemporaneaContent = '/contemporanea/content';
 
+  // Rutas exclusivas del Rol Docente
+  static const String teacherLogin = '/teacher/login';
+  static const String teacherDashboard = '/teacher/dashboard';
+  static const String teacherDocuments = '/teacher/documents';
+  static const String teacherAddDocument = '/teacher/add_document';
+  static const String teacherStudents = '/teacher/students';
+  static const String teacherEvaluations = '/teacher/evaluations';
+
   static Map<String, WidgetBuilder> get routes {
     return {
       splash: (context) => const SplashScreen(),
@@ -43,7 +57,14 @@ class AppRoutes {
       settings: (context) => const SettingsScreen(),
       contemporanea: (context) => const ContemporaneaScreen(),
       contemporaneaContent: (context) => const ContemporaneaContent(),
+
+      // Vistas Docente
+      teacherLogin: (context) => const TeacherLoginScreen(),
+      teacherDashboard: (context) => const TeacherDashboardScreen(),
+      teacherDocuments: (context) => const TeacherDocumentsScreen(),
+      teacherAddDocument: (context) => const TeacherAddDocumentScreen(),
+      teacherStudents: (context) => const TeacherStudentsScreen(),
+      teacherEvaluations: (context) => const TeacherEvaluationsScreen(),
     };
   }
 }
-

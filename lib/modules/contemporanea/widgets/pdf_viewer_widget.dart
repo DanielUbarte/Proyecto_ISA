@@ -8,7 +8,7 @@ import '../../../services/content_service.dart';
 import '../../../services/progress_service.dart';
 
 /// Visor interno de documentos PDF dentro de la aplicación Flutter.
-/// Permite desplazar páginas, saltar de página y guarda la posición de lectura.
+/// Compatible tanto con assets del proyecto como con archivos locales cargados por docentes.
 class PdfViewerWidget extends StatefulWidget {
   final String materialId;
   final String title;
@@ -43,21 +43,32 @@ class _PdfViewerWidgetState extends State<PdfViewerWidget> {
     _preparePdf();
   }
 
-  /// Copia los bytes del asset a un archivo temporal para su lectura fluida en el PDFView nativo.
+  /// Prepara el archivo PDF para su lectura fluida en el PDFView nativo.
   Future<void> _preparePdf() async {
     try {
-      final bytes = await rootBundle.load(widget.assetPath);
-      final dir = await getTemporaryDirectory();
-      final filename = widget.assetPath.split('/').last;
-      final file = File('${dir.path}/$filename');
+      String finalPath;
 
-      await file.writeAsBytes(bytes.buffer.asUint8List(), flush: true);
+      if (widget.assetPath.startsWith('assets/')) {
+        final bytes = await rootBundle.load(widget.assetPath);
+        final dir = await getTemporaryDirectory();
+        final filename = widget.assetPath.split('/').last;
+        final file = File('${dir.path}/$filename');
+        await file.writeAsBytes(bytes.buffer.asUint8List(), flush: true);
+        finalPath = file.path;
+      } else {
+        final file = File(widget.assetPath);
+        if (await file.exists()) {
+          finalPath = file.path;
+        } else {
+          throw Exception('El archivo local no existe en la ruta: ${widget.assetPath}');
+        }
+      }
 
       final initialPage = await _progressService.getPdfLastPage(widget.materialId);
 
       if (mounted) {
         setState(() {
-          _localFilePath = file.path;
+          _localFilePath = finalPath;
           _currentPage = initialPage;
           _isLoading = false;
         });

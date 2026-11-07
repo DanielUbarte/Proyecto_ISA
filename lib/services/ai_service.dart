@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/chat_message_model.dart';
 import '../models/rag_reference_model.dart';
+import 'document_storage_service.dart';
 import 'rag/document_indexer_service.dart';
 import 'rag/rag_response_generator.dart';
 import 'rag/retrieval_engine.dart';
@@ -44,9 +45,10 @@ class AIService {
     );
     _messages.add(userMsg);
 
-    // Asegurar que los documentos estén indexados
+    // Asegurar que los documentos base e incorporados por docentes estén inicializados e indexados
     if (!_indexer.isInitialized) {
       await _indexer.initialize();
+      await DocumentStorageService().initialize();
     }
 
     // 1. Recuperar los fragmentos más relevantes y verificar umbral de evidencia
