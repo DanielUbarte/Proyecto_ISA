@@ -418,7 +418,7 @@ void main() {
       expect(find.text('Exportar Excel'), findsOneWidget);
     });
 
-    testWidgets('TeacherStudentsScreen: Muestra promedio calculado y abre modal con acciones integradas', (tester) async {
+    testWidgets('TeacherStudentsScreen: Muestra promedio calculado y abre detalle con acciones integradas', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: TeacherStudentsScreen(),
@@ -427,16 +427,16 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Gestión de Estudiantes'), findsOneWidget);
-      expect(find.text('Ricardo Arias'), findsOneWidget);
+      expect(find.text('Ricardo Arias'), findsWidgets);
 
-      // Tocar sobre un estudiante para abrir el modal de detalles
-      await tester.tap(find.text('Ricardo Arias'));
+      // Tocar sobre un estudiante para abrir la ficha de detalles
+      await tester.tap(find.text('Ricardo Arias').first);
       await tester.pumpAndSettle();
 
-      expect(find.text('Promedio Académico Calculado:'), findsOneWidget);
-      expect(find.text('Evaluaciones Registradas:'), findsOneWidget);
+      expect(find.text('Ficha del Estudiante'), findsOneWidget);
+      expect(find.text('Progreso en Módulos Históricos'), findsOneWidget);
       expect(find.text('Ver Historial'), findsOneWidget);
-      expect(find.text('Evaluar'), findsOneWidget);
+      expect(find.text('Evaluar Estudiante'), findsOneWidget);
     });
   });
 }

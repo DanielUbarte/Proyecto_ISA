@@ -17,9 +17,12 @@ import '../screens/teacher/teacher_dashboard_screen.dart';
 import '../screens/teacher/teacher_documents_screen.dart';
 import '../screens/teacher/teacher_add_document_screen.dart';
 import '../screens/teacher/teacher_students_screen.dart';
+import '../screens/teacher/student_detail_screen.dart';
 import '../screens/teacher/teacher_evaluations_screen.dart';
 import '../screens/teacher/evaluation_register_screen.dart';
 import '../models/academic_evaluation_model.dart';
+import '../models/student_tracking_model.dart';
+import '../services/student_tracking_service.dart';
 
 class AppRoutes {
   static const String splash = '/';
@@ -42,6 +45,7 @@ class AppRoutes {
   static const String teacherDocuments = '/teacher/documents';
   static const String teacherAddDocument = '/teacher/add_document';
   static const String teacherStudents = '/teacher/students';
+  static const String teacherStudentDetail = '/teacher/students/detail';
   static const String teacherEvaluations = '/teacher/evaluations';
   static const String teacherRegisterEvaluation = '/teacher/evaluations/register';
 
@@ -67,6 +71,16 @@ class AppRoutes {
       teacherDocuments: (context) => const TeacherDocumentsScreen(),
       teacherAddDocument: (context) => const TeacherAddDocumentScreen(),
       teacherStudents: (context) => const TeacherStudentsScreen(),
+      teacherStudentDetail: (context) {
+        final args = ModalRoute.of(context)?.settings.arguments;
+        if (args is StudentTrackingModel) {
+          return StudentDetailScreen(student: args);
+        }
+        final studentId = args is String ? args : 'usr_001';
+        final student = StudentTrackingService().getStudentById(studentId) ??
+            StudentTrackingService().getStudents().first;
+        return StudentDetailScreen(student: student);
+      },
       teacherEvaluations: (context) {
         final args = ModalRoute.of(context)?.settings.arguments;
         if (args is String) {

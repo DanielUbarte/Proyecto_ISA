@@ -5,6 +5,7 @@ import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
 import '../../services/document_storage_service.dart';
 import '../../services/document_sync_service.dart';
+import '../../services/student_tracking_service.dart';
 import '../../widgets/app_logo_leading.dart';
 
 /// Panel Principal del Rol Docente (Dashboard).
@@ -20,12 +21,14 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
   final AuthService _authService = AuthService();
   final DocumentStorageService _storageService = DocumentStorageService();
   final DocumentSyncService _syncService = DocumentSyncService();
+  final StudentTrackingService _studentService = StudentTrackingService();
 
   UserModel? _teacher;
   int _totalDocuments = 0;
   int _publishedDocuments = 0;
   int _draftDocuments = 0;
   int _archivedDocuments = 0;
+  int _studentCount = 0;
   bool _isLoading = true;
   bool _isSyncing = false;
 
@@ -48,6 +51,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
         _publishedDocuments = docs.where((d) => d.isPublished).length;
         _draftDocuments = docs.where((d) => d.isDraft).length;
         _archivedDocuments = docs.where((d) => d.isArchived).length;
+        _studentCount = _studentService.getStudents().length;
         _isLoading = false;
       });
     }
@@ -202,7 +206,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
                       title: 'Gestión y Seguimiento de Estudiantes',
                       subtitle: 'Supervisar el avance de lectura, sesiones activas y progreso.',
                       icon: Icons.groups_outlined,
-                      badgeText: 'Enrolados',
+                      badgeText: '$_studentCount Alumnos',
                       badgeColor: AppColors.logoNavy,
                       onTap: () {
                         Navigator.pushNamed(context, AppRoutes.teacherStudents);
